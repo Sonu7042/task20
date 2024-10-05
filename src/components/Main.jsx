@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const Main = () => {
   const shoes = [
@@ -29,39 +29,64 @@ const Main = () => {
     },
   ];
 
+
+
   const [selectedData, setSelectedData] = useState([]);
   const [total, setTotal] = useState(0);
-  const [addedItems, setAddedItems] = useState([]);
+//   const [addedItems, setAddedItems] = useState([]);
+
+
 
   const addItemToCart = (item) => {
-    const newItem = { ...item, quantity: 1 };
+    const existingItem =selectedData.find((cardItem)=> cardItem.name=== item.name)
+    if(existingItem){
 
-    setSelectedData([...selectedData, newItem]);
+        const updatedCart = selectedData.map((cartItem) =>
+            cartItem.name === item.name
+              ? { ...cartItem, quantity: cartItem.quantity + 1 }
+              : cartItem
+          );
+          setSelectedData(updatedCart)
+    }
+    else{
+        const newItem = { ...item, quantity: 1 };
+        setSelectedData([...selectedData, newItem]);
+
+    }
     setTotal(total + item.price);
-    setAddedItems([...addedItems, item.name]);
   };
+
+
+
 
   const increaseItem = (cartItem) => {
+    
     const updatedCart = selectedData.map((item) =>
       item.name === cartItem.name ? { ...item, quantity: item.quantity + 1 }: item
-    
-    )
-    // console.log("updated", updatedCart)
+    );
     setSelectedData(updatedCart);
     setTotal(total + cartItem.price);
-  }
-
-  const decreaseItem = (cartItem) => {
-    if (cartItem.quantity > 1) {
-      const updatedCart = selectedData.map((item) =>
-       item.name === cartItem.name ? { ...item, quantity: item.quantity - 1 }: item
-      )
-    //   console.log("updated", updatedCart)
-      setSelectedData(updatedCart);
-      setTotal(total - cartItem.price);
-    }
   };
 
+  const decreaseItem = (cartItem) => {
+      const updatedCart = selectedData.map((item) =>
+        item.name === cartItem.name
+          ? { ...item, quantity: item.quantity - 1 }
+          : item
+      );
+      setSelectedData(updatedCart);
+      setTotal(total - cartItem.price);
+    
+  };
+
+  useEffect(() => {
+    let fitterData= selectedData.filter((item)=> item.quantity!==0)
+    setSelectedData(fitterData)
+    console.log("filterdata", fitterData)
+    
+  },[total])
+  
+  
   return (
     <div className="main">
       <div className="left">
@@ -76,7 +101,8 @@ const Main = () => {
                 <p>{`$ ${item.price}`}</p>
                 <button
                   onClick={() => addItemToCart(item)}
-                  disabled={addedItems.includes(item.name)}
+                 
+                //   disabled={addedItems.includes(item.name)}
                 >
                   Add to Cart
                 </button>
